@@ -50,3 +50,28 @@ timeplot
     geom_line() +
     geom_smooth(method = "loess", se = FALSE, span = 0.6) +
     theme_classic())
+
+
+#check pattern
+
+monthly_milk$year_num <- format(monthly_milk$month,format="%Y")
+monthly_milk$month_num <- format(monthly_milk$month,format="%m")
+
+# Create a colour palette using the `colortools` package
+year_pal<- sequential(color="darkturquoise",percentage = 5,what = "value")
+
+
+#make the plot
+(seasonal <- ggplot(monthly_milk,aes(x = month_num,y = milk_prod_per_cow_kg,group=year_num))+geom_line(aes(colour=year_num))+theme_classic()+scale_color_manual(values=year_pal))
+
+#quicker way of making these plots
+# Transform to `ts` class
+monthly_milk_ts <- ts(monthly_milk$milk_prod_per_cow_kg, start = 1962, end = 1975, freq = 12)  # Specify start and end year, measurement frequency (monthly = 12)
+
+# Decompose using `stl()`
+monthly_milk_stl <- stl(monthly_milk_ts, s.window = "period")
+
+# Generate plots
+plot(monthly_milk_stl)  # top=original data, second=estimated seasonal, third=estimated smooth trend, bottom=estimated irregular element i.e. unaccounted for variation
+monthplot(monthly_milk_ts, choice = "seasonal")  # variation in milk production for each month
+seasonplot(monthly_milk_ts)
